@@ -1,0 +1,4 @@
+project_id = "vzgntmonjtcswhxkjisd"
+
+[functions.classify-artifact]
+verify_jwt = false
