@@ -53,12 +53,12 @@ const Dashboard = () => {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-background via-heritage-brown to-background">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-12">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-heritage-gold to-heritage-teal bg-clip-text text-transparent mb-2">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
                 Dashboard
               </h1>
               <p className="text-muted-foreground">Welcome to your artifact collection</p>
@@ -101,7 +101,7 @@ const Dashboard = () => {
                 <CardDescription>Ready to view</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-4xl font-bold text-heritage-teal">{stats.completed}</div>
+                <div className="text-4xl font-bold text-purple-500">{stats.completed}</div>
               </CardContent>
             </Card>
           </div>
@@ -131,7 +131,7 @@ const Dashboard = () => {
               </Button>
 
               <Button
-                onClick={() => navigate("/viewer")}
+                onClick={() => navigate("/gallery")}
                 variant="outline"
                 className="h-24 border-border/50 hover:border-secondary hover:bg-secondary/10 flex flex-col items-center justify-center gap-2"
               >

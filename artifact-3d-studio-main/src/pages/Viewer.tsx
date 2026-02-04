@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 interface ArtifactData {
   id: string;
@@ -69,7 +71,7 @@ const Viewer = () => {
 
     const scene = new THREE.Scene();
     sceneRef.current = scene;
-    scene.background = new THREE.Color(0x1a1410);
+    scene.background = new THREE.Color(0xffffff);
 
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -91,57 +93,70 @@ const Viewer = () => {
     directionalLight.position.set(5, 5, 5);
     scene.add(directionalLight);
 
-    // Create a placeholder 3D object (cube with texture from the artifact image)
-    const geometry = new THREE.BoxGeometry(2, 2, 2);
-    const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load(artifact?.original_image_url || "");
-    const material = new THREE.MeshStandardMaterial({ map: texture });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
+    camera.position.set(0, 0, 5); // Set initial camera position
 
-    camera.position.z = 5;
+    // OrbitControls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; // An animation loop is required when damping is enabled
+    controls.dampingFactor = 0.25;
+    controls.screenSpacePanning = false;
+    controls.minDistance = 2;
+    controls.maxDistance = 10;
+    controls.maxPolarAngle = Math.PI / 2;
 
-    // Mouse controls
-    let isDragging = false;
-    let previousMousePosition = { x: 0, y: 0 };
+    // GLTF Loader
+    if (artifact?.model_url) {
+      const loader = new GLTFLoader();
+      loader.load(
+        artifact.model_url,
+        (gltf) => {
+          scene.add(gltf.scene);
 
-    const onMouseDown = () => {
-      isDragging = true;
-    };
+          // Calculate bounding box to center and scale the model
+          const box = new THREE.Box3().setFromObject(gltf.scene);
+          const center = box.getCenter(new THREE.Vector3());
+          const size = box.getSize(new THREE.Vector3());
 
-    const onMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
-        const deltaMove = {
-          x: e.clientX - previousMousePosition.x,
-          y: e.clientY - previousMousePosition.y,
-        };
-        cube.rotation.y += deltaMove.x * 0.01;
-        cube.rotation.x += deltaMove.y * 0.01;
-      }
-      previousMousePosition = { x: e.clientX, y: e.clientY };
-    };
+          // Adjust position to center the model
+          gltf.scene.position.subVectors(gltf.scene.position, center);
 
-    const onMouseUp = () => {
-      isDragging = false;
-    };
+          // Calculate a scaling factor to fit the model within a certain view
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const fov = camera.fov * (Math.PI / 180);
+          let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+          cameraZ *= 1.5; // Add some padding
+          camera.position.z = cameraZ;
+          controls.target.set(0, 0, 0); // Point controls to the center of the scene
+          controls.update();
 
-    const onWheel = (e: WheelEvent) => {
-      camera.position.z += e.deltaY * 0.01;
-      camera.position.z = Math.max(2, Math.min(10, camera.position.z));
-    };
-
-    renderer.domElement.addEventListener("mousedown", onMouseDown);
-    renderer.domElement.addEventListener("mousemove", onMouseMove);
-    renderer.domElement.addEventListener("mouseup", onMouseUp);
-    renderer.domElement.addEventListener("wheel", onWheel);
+          setLoading(false); // Model loaded, stop loading indicator
+        },
+        (xhr) => {
+          console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+        },
+        (error) => {
+          console.error("Error loading GLTF model:", error);
+          toast.error("Failed to load 3D model.");
+          setLoading(false); // Stop loading even on error
+        }
+      );
+    } else {
+      // Fallback if no model URL
+      console.warn("No 3D model URL provided. Displaying placeholder.");
+      const geometry = new THREE.BoxGeometry(2, 2, 2);
+      const textureLoader = new THREE.TextureLoader();
+      const texture = textureLoader.load(artifact?.original_image_url || "");
+      const material = new THREE.MeshStandardMaterial({ map: texture });
+      const cube = new THREE.Mesh(geometry, material);
+      scene.add(cube);
+      camera.position.z = 5;
+      setLoading(false); // No model to load, stop loading indicator
+    }
 
     // Animation
     const animate = () => {
       requestAnimationFrame(animate);
-      if (!isDragging) {
-        cube.rotation.x += 0.001;
-        cube.rotation.y += 0.001;
-      }
+      controls.update(); // only required if controls.enableDamping is set to true
       renderer.render(scene, camera);
     };
     animate();
@@ -156,10 +171,7 @@ const Viewer = () => {
     window.addEventListener("resize", handleResize);
 
     return () => {
-      renderer.domElement.removeEventListener("mousedown", onMouseDown);
-      renderer.domElement.removeEventListener("mousemove", onMouseMove);
-      renderer.domElement.removeEventListener("mouseup", onMouseUp);
-      renderer.domElement.removeEventListener("wheel", onWheel);
+      controls.dispose();
       window.removeEventListener("resize", handleResize);
     };
   };
@@ -189,7 +201,7 @@ const Viewer = () => {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-background via-heritage-brown to-background">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <Button
             onClick={() => navigate("/gallery")}
@@ -204,7 +216,7 @@ const Viewer = () => {
             {/* 3D Viewer */}
             <Card className="lg:col-span-2 border-border/50 bg-card/95 backdrop-blur-sm overflow-hidden">
               <CardHeader>
-                <CardTitle className="text-2xl bg-gradient-to-r from-heritage-gold to-heritage-teal bg-clip-text text-transparent">
+                <CardTitle className="text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                   {artifact.title}
                 </CardTitle>
               </CardHeader>

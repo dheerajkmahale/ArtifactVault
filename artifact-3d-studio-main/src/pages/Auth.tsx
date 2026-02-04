@@ -31,20 +31,33 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!formData.email || !formData.password) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    if (!isLogin && !formData.fullName) {
+      toast.error("Please enter your full name");
+      return;
+    }
+    
     setLoading(true);
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
         
         if (error) throw error;
+        
         toast.success("Welcome back!");
         navigate("/dashboard");
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
@@ -56,15 +69,26 @@ const Auth = () => {
         });
         
         if (error) throw error;
-        toast.success("Account created successfully!");
-        navigate("/dashboard");
+        
+        toast.success("Account created successfully! Please check your email to verify your account.");
+        // Don't navigate immediately for signup, let user check email
       }
     } catch (error: any) {
-      if (error.message.includes("already registered")) {
-        toast.error("This email is already registered. Please login instead.");
-      } else {
-        toast.error(error.message || "An error occurred");
+      let errorMessage = "An error occurred";
+      
+      if (error.message) {
+        if (error.message.includes("already registered")) {
+          errorMessage = "This email is already registered. Please login instead.";
+        } else if (error.message.includes("Invalid login credentials")) {
+          errorMessage = "Invalid email or password. Please try again.";
+        } else if (error.message.includes("Password should be at least")) {
+          errorMessage = "Password should be at least 6 characters long.";
+        } else {
+          errorMessage = error.message;
+        }
       }
+      
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
