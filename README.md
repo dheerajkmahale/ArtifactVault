@@ -1,0 +1,5 @@
+The Intelligent 3D Artifact Scanner and Categorization System is an AI-powered web application developed to digitally preserve historical and cultural artifacts. The system enables users to capture or upload multiple images of an artifact, automatically reconstruct a 3D model, classify the artifact using Artificial Intelligence, and store all information in a searchable digital repository.
+
+The application combines computer vision, photogrammetry, machine learning, cloud storage, and 3D visualization to create accurate digital representations of artifacts. Users can view reconstructed models in an interactive 3D viewer, search artifacts by category, and access detailed metadata such as artifact name, historical period, material, dimensions, location, and description.
+
+The project aims to support museums, archaeologists, researchers, educational institutions, and cultural heritage organizations by providing an efficient, low-cost, and scalable solution for artifact digitization and preservation.
