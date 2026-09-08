@@ -123,6 +123,7 @@ Your response must be a JSON object with these exact fields:
       .update({
         classification: classificationData.classification || "Unknown",
         metadata: classificationData,
+        model_url: classificationData.model_url || null,
         processing_status: 'completed'
       })
       .eq('id', artifactId);

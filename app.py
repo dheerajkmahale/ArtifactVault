@@ -67,6 +67,57 @@ async def classify_artifact(request: ClassifyRequest):
         elif confidence.item() < 0.8:
             confidence_str = "medium"
 
+        # ---------------------------------------------------------
+        # 3D Mesh Generation (Meshy.ai API Integration)
+        # ---------------------------------------------------------
+        model_url = None
+        meshy_api_key = os.environ.get("MESHY_API_KEY")
+        
+        if meshy_api_key:
+            try:
+                # Step 1: Start the 3D generation task
+                headers = {"Authorization": f"Bearer {meshy_api_key}"}
+                payload = {
+                    "image_url": request.image_url,
+                    "enable_pbr": True,
+                }
+                
+                print("Initiating Meshy.ai 3D generation task...")
+                task_res = requests.post(
+                    "https://api.meshy.ai/openapi/v2/image-to-3d",
+                    headers=headers,
+                    json=payload
+                )
+                
+                if task_res.status_code == 202:
+                    task_id = task_res.json().get("result")
+                    
+                    # Step 2: Poll for completion (Warning: For production, this should be async/webhooks 
+                    # to prevent edge function timeouts, but we'll poll synchronously for the prototype)
+                    import time
+                    max_retries = 60 # 2 minutes max
+                    for _ in range(max_retries):
+                        status_res = requests.get(
+                            f"https://api.meshy.ai/openapi/v2/image-to-3d/{task_id}",
+                            headers=headers
+                        )
+                        status_data = status_res.json()
+                        status = status_data.get("status")
+                        
+                        if status == "SUCCEEDED":
+                            model_url = status_data.get("model_urls", {}).get("glb")
+                            print(f"3D Model generated successfully: {model_url}")
+                            break
+                        elif status in ["FAILED", "EXPIRED"]:
+                            print(f"3D generation failed: {status_data}")
+                            break
+                            
+                        time.sleep(2)
+            except Exception as mesh_e:
+                print(f"Error calling Meshy API: {mesh_e}")
+        else:
+            print("No MESHY_API_KEY found. Skipping real 3D generation.")
+
         return {
             "classification": predicted_class,
             "subCategory": "Local CNN Prediction",
@@ -76,7 +127,8 @@ async def classify_artifact(request: ClassifyRequest):
             "condition": "Unknown",
             "notableFeatures": "Analyzed by Local Model",
             "confidence": confidence_str,
-            "raw_score": float(confidence.item())
+            "raw_score": float(confidence.item()),
+            "model_url": model_url  # New field returning the .glb URL
         }
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
