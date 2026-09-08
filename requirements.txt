@@ -1,0 +1,6 @@
+torch
+torchvision
+opencv-python
+numpy
+open3d
+trimesh

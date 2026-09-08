@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+checkpoints/
+data/
+
+# Node
+node_modules/
+.npm/
+
+# Env
+.env
+.env.local
+
+# Supabase
+**/supabase/.temp/
+**/supabase/.branches/

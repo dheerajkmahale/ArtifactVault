@@ -1,0 +1,21 @@
+project_id = "vzgntmonjtcswhxkjisd"
+
+[api]
+port = 54421
+
+[db]
+port = 54422
+
+[studio]
+port = 54423
+
+[analytics]
+port = 54427
+
+[inbucket]
+port = 54424
+smtp_port = 54425
+pop3_port = 54426
+
+[functions.classify-artifact]
+verify_jwt = false
