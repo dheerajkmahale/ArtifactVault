@@ -183,8 +183,8 @@ const Index = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-border/40 pb-3">
                   <span className="text-xs font-mono text-primary uppercase">Preservation Preview</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    VERIFIED
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border/50">
+                    Illustrative Example
                   </span>
                 </div>
                 <h4 className="font-heading font-bold text-lg text-foreground">Attic Black-Figure Amphora</h4>
@@ -203,9 +203,10 @@ const Index = () => {
                 </p>
                 <Button
                   onClick={() => navigate("/gallery")}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-9"
+                  variant="outline"
+                  className="w-full border-border/60 hover:bg-muted text-xs h-9 font-medium"
                 >
-                  Explore in Archive →
+                  Browse Gallery Archive →
                 </Button>
               </div>
             </div>
