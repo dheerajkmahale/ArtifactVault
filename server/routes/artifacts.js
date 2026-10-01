@@ -10,6 +10,10 @@ import {
   generateTextEmbedding,
   cosineSimilarity,
 } from '../services/gemini.js';
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from '../services/cloudinary.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -68,17 +72,29 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
       });
     }
 
-    const host = req.get('host');
-    const protocol = req.protocol;
-    const imageUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
+    // Upload image to Cloudinary
+    let cloudImageUrl;
+    let cloudPublicId = null;
+
+    try {
+      const uploadResult = await uploadToCloudinary(req.file.path);
+      cloudImageUrl = uploadResult.secure_url;
+      cloudPublicId = uploadResult.public_id;
+    } catch (cloudErr) {
+      console.error('[Cloudinary] Upload failed, falling back to local URL:', cloudErr.message);
+      const host = req.get('host');
+      const protocol = req.protocol;
+      cloudImageUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
+    }
 
     // Create artifact in 'processing' status
     const artifact = await Artifact.create({
       owner: req.user._id,
       title,
       description: description || '',
-      original_image_url: imageUrl,
-      image_path: `/uploads/${req.file.filename}`,
+      original_image_url: cloudImageUrl,
+      image_path: cloudImageUrl,
+      cloudinary_id: cloudPublicId,
       classification: null,
       processing_status: 'processing',
       model_url: null,
@@ -89,7 +105,7 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
       },
     });
 
-    // Run classification with Gemini if key is provided
+    // Run classification with Gemini
     try {
       const geminiResult = await classifyArtifactImage(req.file.path, req.file.mimetype);
       if (geminiResult) {
@@ -101,16 +117,22 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
             console.warn('[Upload] Embedding generation error:', embErr.message);
           }
         }
-        artifact.processing_status = 'completed';
-        await artifact.save();
-      } else {
-        artifact.processing_status = 'completed';
-        await artifact.save();
       }
+      artifact.processing_status = 'completed';
+      await artifact.save();
     } catch (err) {
       console.warn('[Upload] Classification processing warning:', err.message);
       artifact.processing_status = 'completed';
       await artifact.save();
+    } finally {
+      // Clean up local temp file after cloud upload and classification
+      if (cloudPublicId && fs.existsSync(req.file.path)) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (unlinkErr) {
+          console.warn('[Upload] Temp file cleanup warning:', unlinkErr.message);
+        }
+      }
     }
 
     return res.status(201).json({
@@ -150,10 +172,12 @@ router.post('/:id/classify', protect, async (req, res) => {
     artifact.processing_status = 'processing';
     await artifact.save();
 
-    const imageFilePath = path.join(__dirname, '..', artifact.image_path);
     const mimeType = artifact.metadata?.mimeType || 'image/png';
+    const imageSource = (artifact.original_image_url && artifact.original_image_url.startsWith('http'))
+      ? artifact.original_image_url
+      : path.join(__dirname, '..', artifact.image_path || '');
 
-    const classification = await classifyArtifactImage(imageFilePath, mimeType);
+    const classification = await classifyArtifactImage(imageSource, mimeType);
 
     if (classification) {
       artifact.classification = classification;
@@ -520,7 +544,13 @@ router.delete('/:id', protect, async (req, res) => {
       });
     }
 
-    if (artifact.image_path) {
+    // Delete from Cloudinary if stored in cloud
+    if (artifact.cloudinary_id) {
+      await deleteFromCloudinary(artifact.cloudinary_id);
+    }
+
+    // Clean up local file if legacy
+    if (artifact.image_path && !artifact.image_path.startsWith('http')) {
       const filePath = path.join(__dirname, '..', artifact.image_path);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);

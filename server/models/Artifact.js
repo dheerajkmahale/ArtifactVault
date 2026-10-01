@@ -25,6 +25,10 @@ const artifactSchema = new mongoose.Schema(
     image_path: {
       type: String,
     },
+    cloudinary_id: {
+      type: String,
+      default: null,
+    },
     classification: {
       type: mongoose.Schema.Types.Mixed,
       default: null,

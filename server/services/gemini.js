@@ -7,7 +7,7 @@ import fs from 'fs';
  * @param {string} mimeType - Image MIME type
  * @returns {Promise<Object|null>} Structured classification object
  */
-export async function classifyArtifactImage(imageFilePath, mimeType = 'image/png') {
+export async function classifyArtifactImage(imageInput, mimeType = 'image/png') {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || apiKey.trim() === '' || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
     console.warn('[Gemini] GEMINI_API_KEY is not configured. Classification pending user API key.');
@@ -16,8 +16,23 @@ export async function classifyArtifactImage(imageFilePath, mimeType = 'image/png
 
   try {
     const ai = new GoogleGenAI({ apiKey: apiKey.trim() });
-    const imageBuffer = fs.readFileSync(imageFilePath);
-    const base64Data = imageBuffer.toString('base64');
+    let base64Data;
+
+    if (Buffer.isBuffer(imageInput)) {
+      base64Data = imageInput.toString('base64');
+    } else if (typeof imageInput === 'string' && (imageInput.startsWith('http://') || imageInput.startsWith('https://'))) {
+      const response = await fetch(imageInput);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image from URL: ${response.statusText}`);
+      }
+      const arrayBuffer = await response.arrayBuffer();
+      base64Data = Buffer.from(arrayBuffer).toString('base64');
+    } else if (typeof imageInput === 'string' && fs.existsSync(imageInput)) {
+      const imageBuffer = fs.readFileSync(imageInput);
+      base64Data = imageBuffer.toString('base64');
+    } else {
+      throw new Error(`Invalid image input for classification: ${imageInput}`);
+    }
 
     const prompt = `You are a specialist in archaeology, digital preservation, and museum artifact curation.
 Analyze this archaeological artifact image and provide a structured JSON classification with these exact keys:
