@@ -2,51 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 240 10% 3.9%;
+    --background: 224 25% 6%;
+    --foreground: 210 20% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card: 222 22% 10%;
+    --card-foreground: 210 20% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover: 222 22% 10%;
+    --popover-foreground: 210 20% 98%;
 
-    --primary: 38 90% 55%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 43 96% 56%;
+    --primary-foreground: 224 25% 6%;
 
-    --secondary: 180 45% 45%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 168 80% 42%;
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 223 18% 15%;
+    --muted-foreground: 215 16% 65%;
 
-    --accent: 38 90% 55%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 43 96% 56%;
+    --accent-foreground: 224 25% 6%;
 
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 78% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 38 90% 55%;
+    --border: 222 18% 18%;
+    --input: 222 18% 18%;
+    --ring: 43 96% 56%;
 
-    --radius: 0.75rem;
+    --radius: 0.85rem;
 
-    --heritage-gold: 38 90% 55%;
-    --heritage-brown: 25 18% 95%;
-    --heritage-teal: 180 45% 45%;
-    --heritage-light: 0 0% 98%;
-    
-    --gradient-gold: linear-gradient(135deg, hsl(38 90% 55%) 0%, hsl(35 85% 45%) 100%);
-    --gradient-teal: linear-gradient(135deg, hsl(180 45% 45%) 0%, hsl(175 50% 35%) 100%);
-    --shadow-glow: 0 0 30px hsl(38 90% 55% / 0.2);
-    --shadow-soft: 0 10px 40px hsl(0 0% 0% / 0.1);
+    --heritage-gold: 43 96% 56%;
+    --heritage-brown: 222 20% 12%;
+    --heritage-teal: 168 80% 42%;
+    --heritage-dark: 225 28% 5%;
   }
 }
 
@@ -57,5 +48,40 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+/* Glassmorphism & Custom Accents */
+.glass-panel {
+  background: rgba(18, 24, 38, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(18, 24, 38, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(245, 184, 46, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5), 0 0 20px -5px rgba(245, 184, 46, 0.15);
+}
+
+.glow-gold {
+  box-shadow: 0 0 25px -5px rgba(245, 184, 46, 0.3);
+}
+
+.glow-teal {
+  box-shadow: 0 0 25px -5px rgba(20, 184, 166, 0.3);
 }
