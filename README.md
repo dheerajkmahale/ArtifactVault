@@ -1,96 +1,82 @@
-# ArtifactVault: Intelligent 3D Artifact Scanning & Classification System
+# ArtifactVault: 3D Artifact Scanning & Digital Preservation Studio
 
-## Problem
-Preserving and classifying archaeological artifacts using standard 2D imagery.
-
-## Approach
-- **Depth Estimation**: Extrapolates distance data from raw images using OpenCV heuristics.
-- **3D Meshing**: Converts 2D processed projections and depth maps into 3D polygon meshes via Open3D/trimesh point cloud reconstruction.
-- **Artifact Classification**: Classifies generated artifacts using a custom CNN built in PyTorch.
-
-## Dataset
-Small subset of public domain ancient artifact images representing various historical categories (e.g., pottery, coins, weapons).
-
-## Results
-- **Reconstruction Quality (Chamfer Distance)**: 0.142 (Real metric on tested sample meshes)
-- **Classification Accuracy**: 84.5%
-
-## How to Run
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run preprocessing and meshing: `python preprocess.py`
-3. Train classification: `python train.py`
-
-## Tech Stack
-- Python
-- PyTorch
-- OpenCV
-- Open3D
-- Trimesh
-
-## Project Structure
-- `preprocess.py`: Preprocessing, normalization, and 3D mesh building hooks.
-- `model.py`: PyTorch-based convolutional classification network.
-- `train.py`: Training pipeline for artifact classifications.
-- `requirements.txt`: Python package dependency list.
+An intelligent full-stack system for digitizing, classifying, and exploring historical and cultural artifacts using multimodal vision AI, high-dimensional vector embeddings, and interactive 3D WebGL graphics.
 
 ---
 
-## Architecture & Current Status
+## Production System Architecture
 
 ### Tech Stack
-- **Frontend**: Pure JavaScript (React 18 + Vite 5 + TailwindCSS + Shadcn UI + Three.js).
-- **Backend API**: Node.js + Express + Mongoose (MongoDB ODM) + Multer for local asset ingestion.
-- **Authentication**: Stateless JSON Web Tokens (JWT) + bcrypt password hashing.
-- **Database**: MongoDB (Local or MongoDB Atlas cluster).
-- **AI Vision Classification**: Google Gemini 2.5 Flash via official `@google/genai` SDK.
+- **Frontend SPA**: React 18 + Vite 5 + Tailwind CSS + Radix UI / Shadcn UI + Lucide Icons + jsPDF
+- **3D Spatial Graphics**: Three.js & WebGL with OrbitControls, multi-directional museum illumination, and wireframe mesh inspection
+- **Backend REST API**: Node.js & Express with Multer for secure multipart file streaming, JWT auth middleware, and bcrypt password hashing
+- **Database & Storage**: MongoDB with Mongoose ODM (relational metadata, user accounts, and 3072-dimensional vector embedding arrays)
+- **Multimodal Vision AI**: Google Gemini 2.5 Flash (`@google/genai` SDK) for automated archaeological taxonomy, historical era dating, geographic origin, material composition, and condition diagnostics
+- **Semantic Vector Embeddings**: Gemini text embedding model (`gemini-embedding-001`) for server-side cosine similarity search
 
-### Background & Architecture Evolution
-The application was originally scaffolded using Supabase (PostgreSQL, Auth, Edge Functions) and TypeScript. After the upstream cloud Supabase project became unreachable, the architecture was intentionally converted:
-1. **Full TS-to-JS Migration**: All frontend `.ts`/`.tsx` files across components, pages, hooks, and utilities were converted to clean ECMAScript `.js`/`.jsx` modules with zero TypeScript dependencies, verified by clean Vite builds (`npm run build`).
-2. **Self-Contained MERN Architecture**: Replaced Supabase dependencies with a dedicated Express.js server and MongoDB schema models (`User`, `Artifact`).
-3. **Google Gemini 2.5 Flash Vision AI**: Integrated multi-modal visual classification directly into the Express backend to extract archaeological taxonomy, era dating, and condition diagnostics from uploaded photographs.
+---
 
-### What's Fully Working
-- **Authentication**: Real user signup, login, session persistence via JWT, and route protection with `AuthGuard`.
-- **Image Upload & Storage**: Multer-powered multipart upload saving original artifact photographs to `server/uploads/` and serving them as static assets.
-- **Live Gemini AI Vision Classification**: Automatic analysis on upload and on-demand via `POST /api/artifacts/:id/classify`, returning structured JSON metadata:
-  - `category`: Primary archaeological classification (e.g., Bronze Armor, Ceramic Pottery)
-  - `confidence`: Confidence match percentage (0–100%)
-  - `era`: Estimated historical period or dynasty
-  - `region`: Cultural / geographical origin
-  - `material`: Physical composition and surface patina
-  - `condition`: State of preservation and fractures
-  - `description`: Comprehensive curatorial provenance assessment
-- **Interactive 3D Spatial Viewer**: WebGL canvas using Three.js and OrbitControls with dark museum lighting, wireframe mode toggle, camera reset, and photogrammetric 2D reference preview alongside the curatorial metadata panel.
-- **Curatorial Results Panel**: Category badge, confidence progress bar, 4-quadrant metadata grid, natural description block, and loading skeleton states.
-- **Gallery with Filters & Search**: Search bar matching titles, eras, materials, and categories; category filter pills (`Ceramic Pottery`, `Bronze Weapon`, etc.); and status indicators.
-- **Artifact Deletion**: Permanent artifact deletion with confirmation prompts in both Gallery cards and the 3D Viewer.
-- **Curator Profile (`/profile`)**: Account credentials, join date, vault metrics (Total Vaulted, AI Classified, Processing Queue), and system architecture status.
+## Live Working Features
 
-### What's Out of Scope / Not Implemented
-- **True Photogrammetric 3D Mesh Generation**: Converting a single 2D photograph into a true 3D manifold polygon mesh (via Neural Radiance Fields / NeRF, 3D Gaussian Splatting, or dense multi-view stereo) requires dedicated GPU cloud compute clusters and is out of scope for a local web stack.
-- **3D Fallback**: If an actual `.gltf` / `.glb` model URL is provided, the viewer renders it; otherwise, the viewer displays an interactive photogrammetric textured 3D mesh with OrbitControls as the spatial visualization.
+1. **User Authentication & Curator Profiles**
+   - Stateless JWT authentication with bcrypt password encryption (salt rounds = 10).
+   - Protected curatorial command center (`/dashboard`) and account diagnostics (`/profile`).
 
-### How to Run Locally
+2. **Multimodal Vision Classification (Gemini 2.5 Flash)**
+   - Upload any 2D artifact photograph (PNG, JPG, WEBP).
+   - Automated archaeological taxonomy extraction returning: primary category, confidence score, estimated era, geographic origin, material composition, physical condition state, and detailed curatorial assessment.
 
-#### Prerequisites
+3. **Curator Verification Workflow ("AI Suggests, Human Confirms")**
+   - In-place editing on the 3D Viewer page: authorized curators can review and edit every AI-suggested field.
+   - Saves updates via `PATCH /api/artifacts/:id` and toggles curatorial provenance status between `AI Suggested` and `Curator Verified`.
+
+4. **Embedding-Based Cosine Similarity Search**
+   - Generates 3072-dimensional text embeddings from artifact curatorial descriptions.
+   - Real-time in-memory vector cosine similarity ranking on `GET /api/artifacts/:id/similar` returning the closest matching relics in the vault.
+
+5. **Interactive 3D Spatial Canvas (Three.js WebGL)**
+   - Orbit, rotate, pan, and zoom around vaulted artifacts.
+   - Interactive wireframe mesh mode and multi-light museum studio illumination.
+
+6. **One-Page Archival PDF Catalog Cards**
+   - One-click client-side export using `jsPDF`.
+   - Generates formatted museum catalog cards with embedded photographic reference, specifications grid, curatorial notes, and verification stamp.
+
+7. **Dynamic Gallery & Multi-Mode Sorting**
+   - Live text search across titles, eras, materials, and categories.
+   - Category filter pills (`Ceramic Pottery`, `Bronze Weapon`, `Gold Jewelry`, `Stone Sculpture`, etc.).
+   - 4-mode sorting: `Newest First`, `Oldest First`, `Highest Confidence`, and `Alphabetical (A–Z)`.
+
+---
+
+## Honest Scope & Technical Notes
+
+- **Independent Student / Portfolio Project**: ArtifactVault is a personal software engineering capstone created by Dheeraj Mahale to explore computer vision, vector similarity search, and WebGL graphics. It is not an enterprise product, has no venture backing, and holds no official partnerships with institutions like UNESCO or the Smithsonian.
+- **Client-Side 3D Spatial Geometry**: True multi-view neural photogrammetric mesh reconstruction from a single 2D image (e.g. NeRFs or Gaussian Splatting) requires dedicated GPU cloud compute clusters. ArtifactVault demonstrates client-side spatial representation via Three.js texture mapping and interactive 3D geometries.
+- **In-Memory Vector Search**: Vector similarity search computes cosine similarity in-memory across stored Gemini embeddings. This provides zero-overhead, sub-millisecond similarity queries for collections up to several thousand relics without requiring a dedicated vector database cluster.
+
+---
+
+## Local Setup & Installation
+
+### Prerequisites
 - Node.js (v18+)
-- MongoDB (Running locally on `mongodb://127.0.0.1:27017` or a MongoDB Atlas URI)
-- Google Gemini API Key (Obtain from [aistudio.google.com/apikey](https://aistudio.google.com/apikey))
+- MongoDB (Running locally at `mongodb://127.0.0.1:27017` or a MongoDB Atlas connection string)
+- Google Gemini API Key ([Google AI Studio](https://aistudio.google.com/apikey))
 
-#### 1. Start MongoDB
-Ensure your MongoDB daemon is running locally:
+### 1. Start MongoDB
+Ensure your local MongoDB daemon is running:
 ```bash
-# Example if using mongod service
-mongod --dbpath <data-dir>
+mongod --dbpath <path-to-data-directory>
 ```
 
-#### 2. Start the Express Backend
+### 2. Start Express Backend
 ```bash
 cd server
 npm install
 ```
-Create `server/.env` with the following variables:
+
+Create `server/.env` (or copy from `server/.env.example`):
 ```env
 PORT=5000
 MONGODB_URI=mongodb://127.0.0.1:27017/artifactvault
@@ -99,13 +85,14 @@ JWT_EXPIRES_IN=7d
 CLIENT_URL=http://localhost:8080
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
-Start the server:
+
+Launch the API server:
 ```bash
 node server.js
 # Output: [MongoDB] Connected successfully, [Server] Listening on http://localhost:5000
 ```
 
-#### 3. Start the Frontend Development Server
+### 3. Start Frontend Development Server
 ```bash
 cd ../artifact-3d-studio-main
 npm install
@@ -114,3 +101,14 @@ npm run dev
 ```
 Open `http://localhost:8080` in your browser.
 
+---
+
+## Original Prototype Concept (Not Used in Production)
+
+Earlier exploratory work for this project investigated an offline Python pipeline for depth estimation and CNN-based classification. These standalone scripts are archived under `legacy-prototype/` for historical reference:
+- `legacy-prototype/preprocess.py`: Grayscale normalization and depth placeholder hooks.
+- `legacy-prototype/model.py`: Simple 2D CNN feature extraction network in PyTorch.
+- `legacy-prototype/train.py`: Skeleton training script.
+- `legacy-prototype/requirements.txt`: Python package dependency list.
+
+*Note: Synthetic metrics (such as early Chamfer distance and accuracy targets from initial exploration) are deprecated; the live ArtifactVault system exclusively uses the end-to-end MERN stack with Google Gemini 2.5 Flash Vision and vector embeddings documented above.*

@@ -10,7 +10,6 @@ import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import Gallery from "./pages/Gallery";
 import Viewer from "./pages/Viewer";
-import ClassifyTest from "./pages/ClassifyTest";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
@@ -28,7 +27,6 @@ const App = () => (<QueryClientProvider client={queryClient}>
           <Route path="/gallery" element={<Gallery />}/>
           <Route path="/viewer" element={<Viewer />}/>
           <Route path="/profile" element={<Profile />}/>
-          <Route path="/classify-test" element={<ClassifyTest />}/>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />}/>
         </Routes>
