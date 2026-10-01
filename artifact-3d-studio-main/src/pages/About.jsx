@@ -19,6 +19,7 @@ import {
   Terminal,
   ExternalLink,
   BookOpen,
+  Github,
 } from "lucide-react";
 
 const TECH_STACK = [
@@ -313,13 +314,13 @@ const About = () => {
         </section>
 
         {/* Creator Bio Section */}
-        <section className="p-8 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/5 via-card/50 to-primary/5 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <section className="p-6 sm:p-7 rounded-xl border border-border/50 bg-gradient-to-r from-card/90 via-card to-primary/5 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-bold text-xl shrink-0">
-              <User className="w-7 h-7" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-primary/20 via-amber-500/10 to-amber-200/20 border border-primary/30 flex items-center justify-center font-heading font-bold text-base text-primary shadow-sm shrink-0">
+              DM
             </div>
             <div>
-              <span className="text-xs font-mono uppercase tracking-wider text-primary font-semibold">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-semibold">
                 Creator & Developer
               </span>
               <h3 className="text-xl font-heading font-bold text-foreground">
@@ -333,28 +334,42 @@ const About = () => {
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <Button
-              variant="outline"
               size="sm"
               onClick={() => window.open("https://github.com/dheerajkmahale/ArtifactVault", "_blank")}
-              className="border-border/60 hover:bg-muted text-xs flex-1 sm:flex-none"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold h-9 px-4 shadow-md shadow-primary/20 flex-1 sm:flex-none"
             >
-              <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+              <Github className="w-3.5 h-3.5 mr-1.5" />
               GitHub Repository
+              <ExternalLink className="w-3 h-3 ml-1.5 opacity-70" />
             </Button>
             <Button
+              variant="outline"
               size="sm"
               onClick={() => navigate("/gallery")}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex-1 sm:flex-none"
+              className="border-border/60 hover:bg-muted text-xs h-9 px-4 flex-1 sm:flex-none"
             >
-              View Artifacts
+              Browse Gallery
               <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
             </Button>
           </div>
         </section>
       </main>
+
+      {/* Footer */}
+      <footer className="mt-auto border-t border-border/30 py-8 bg-card/20">
+        <div className="container mx-auto px-4 max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Box className="w-4 h-4 text-primary" />
+            <span className="font-heading font-semibold text-foreground">ArtifactVault</span>
+            <span>— Digital Cultural Preservation Studio</span>
+          </div>
+          <p className="font-mono">
+            Independent Engineering Project · Full-Stack MERN & Gemini Vision
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
 
 export default About;
-``
