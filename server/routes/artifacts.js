@@ -5,7 +5,11 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { Artifact } from '../models/Artifact.js';
 import { protect } from '../middleware/auth.js';
-import { classifyArtifactImage } from '../services/gemini.js';
+import {
+  classifyArtifactImage,
+  generateTextEmbedding,
+  cosineSimilarity,
+} from '../services/gemini.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -90,6 +94,13 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
       const geminiResult = await classifyArtifactImage(req.file.path, req.file.mimetype);
       if (geminiResult) {
         artifact.classification = geminiResult;
+        if (geminiResult.description) {
+          try {
+            artifact.descriptionEmbedding = await generateTextEmbedding(geminiResult.description);
+          } catch (embErr) {
+            console.warn('[Upload] Embedding generation error:', embErr.message);
+          }
+        }
         artifact.processing_status = 'completed';
         await artifact.save();
       } else {
@@ -146,6 +157,13 @@ router.post('/:id/classify', protect, async (req, res) => {
 
     if (classification) {
       artifact.classification = classification;
+      if (classification.description) {
+        try {
+          artifact.descriptionEmbedding = await generateTextEmbedding(classification.description);
+        } catch (embErr) {
+          console.warn('[Classify] Embedding generation error:', embErr.message);
+        }
+      }
       artifact.processing_status = 'completed';
       await artifact.save();
 
@@ -259,6 +277,224 @@ router.get('/:id', async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || 'Server error while fetching artifact',
+    });
+  }
+});
+
+// @route   PATCH /api/artifacts/:id
+// @desc    Update artifact curatorial classification (Curator human confirmation)
+// @access  Private (Owner only)
+router.patch('/:id', protect, async (req, res) => {
+  try {
+    const artifact = await Artifact.findById(req.params.id);
+
+    if (!artifact) {
+      return res.status(404).json({
+        success: false,
+        message: 'Artifact not found',
+      });
+    }
+
+    if (artifact.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to edit this artifact',
+      });
+    }
+
+    const {
+      title,
+      description,
+      category,
+      era,
+      region,
+      material,
+      condition,
+      classification,
+    } = req.body;
+
+    if (title !== undefined && typeof title === 'string' && title.trim()) {
+      artifact.title = title.trim();
+    }
+
+    // Merge curatorial classification fields
+    const currentClass =
+      artifact.classification && typeof artifact.classification === 'object'
+        ? { ...artifact.classification }
+        : {};
+
+    const incomingClass = classification || {};
+
+    if (category !== undefined || incomingClass.category !== undefined) {
+      currentClass.category = (category || incomingClass.category || '').trim();
+    }
+    if (era !== undefined || incomingClass.era !== undefined) {
+      currentClass.era = (era || incomingClass.era || '').trim();
+    }
+    if (region !== undefined || incomingClass.region !== undefined) {
+      currentClass.region = (region || incomingClass.region || '').trim();
+    }
+    if (material !== undefined || incomingClass.material !== undefined) {
+      currentClass.material = (material || incomingClass.material || '').trim();
+    }
+    if (condition !== undefined || incomingClass.condition !== undefined) {
+      currentClass.condition = (condition || incomingClass.condition || '').trim();
+    }
+
+    const updatedDesc =
+      description !== undefined
+        ? description
+        : incomingClass.description !== undefined
+        ? incomingClass.description
+        : currentClass.description;
+
+    if (updatedDesc !== undefined) {
+      currentClass.description = (updatedDesc || '').trim();
+      artifact.description = (updatedDesc || '').trim();
+    }
+
+    artifact.classification = currentClass;
+    artifact.markModified('classification');
+
+    // Mark as Curator Verified
+    artifact.curatorVerified = true;
+
+    // If description is present, recompute embedding
+    if (currentClass.description) {
+      try {
+        const newEmbedding = await generateTextEmbedding(currentClass.description);
+        if (newEmbedding && newEmbedding.length > 0) {
+          artifact.descriptionEmbedding = newEmbedding;
+        }
+      } catch (embErr) {
+        console.warn('[Patch] Embedding re-calculation error:', embErr.message);
+      }
+    }
+
+    await artifact.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Artifact curatorial record updated and verified',
+      artifact: {
+        ...artifact.toObject(),
+        id: artifact._id.toString(),
+      },
+    });
+  } catch (error) {
+    console.error('Update artifact error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Server error while updating artifact',
+    });
+  }
+});
+
+// @route   GET /api/artifacts/:id/similar
+// @desc    Get 3-5 closest matches by cosine similarity
+// @access  Public / Private
+router.get('/:id/similar', async (req, res) => {
+  try {
+    const target = await Artifact.findById(req.params.id);
+
+    if (!target) {
+      return res.status(404).json({
+        success: false,
+        message: 'Target artifact not found',
+      });
+    }
+
+    // Ensure target has an embedding
+    let targetEmbedding = target.descriptionEmbedding;
+    const targetText =
+      target.classification?.description || target.description;
+
+    if ((!targetEmbedding || targetEmbedding.length === 0) && targetText) {
+      try {
+        targetEmbedding = await generateTextEmbedding(targetText);
+        if (targetEmbedding && targetEmbedding.length > 0) {
+          target.descriptionEmbedding = targetEmbedding;
+          await target.save();
+        }
+      } catch (embErr) {
+        console.warn('[Similar] Target embedding warning:', embErr.message);
+      }
+    }
+
+    if (!targetEmbedding || targetEmbedding.length === 0) {
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        similar: [],
+      });
+    }
+
+    // Retrieve other artifacts in the vault
+    const candidates = await Artifact.find({
+      _id: { $ne: target._id },
+    }).lean();
+
+    // Ensure candidates with descriptions have embeddings
+    for (const cand of candidates) {
+      if (
+        (!cand.descriptionEmbedding || cand.descriptionEmbedding.length === 0) &&
+        (cand.classification?.description || cand.description)
+      ) {
+        try {
+          const candText = cand.classification?.description || cand.description;
+          const emb = await generateTextEmbedding(candText);
+          if (emb && emb.length > 0) {
+            cand.descriptionEmbedding = emb;
+            await Artifact.updateOne(
+              { _id: cand._id },
+              { $set: { descriptionEmbedding: emb } }
+            );
+          }
+        } catch (e) {
+          // ignore error on candidate
+        }
+      }
+    }
+
+    // Calculate cosine similarity for all candidates
+    const scoredCandidates = [];
+
+    for (const cand of candidates) {
+      if (cand.descriptionEmbedding && cand.descriptionEmbedding.length > 0) {
+        const sim = cosineSimilarity(targetEmbedding, cand.descriptionEmbedding);
+        // Normalize similarity to percentage 0-100
+        const simPercent = Math.max(0, Math.min(100, Math.round(sim * 100)));
+        scoredCandidates.push({
+          id: cand._id.toString(),
+          title: cand.title,
+          description: cand.classification?.description || cand.description || '',
+          category: cand.classification?.category || 'Artifact',
+          era: cand.classification?.era || 'Historical',
+          region: cand.classification?.region || 'Unknown',
+          material: cand.classification?.material || 'Unknown',
+          original_image_url: cand.original_image_url,
+          curatorVerified: !!cand.curatorVerified,
+          similarity: simPercent,
+        });
+      }
+    }
+
+    // Sort descending by similarity
+    scoredCandidates.sort((a, b) => b.similarity - a.similarity);
+
+    // Return top 3-5 matches
+    const topMatches = scoredCandidates.slice(0, 4);
+
+    return res.status(200).json({
+      success: true,
+      count: topMatches.length,
+      similar: topMatches,
+    });
+  } catch (error) {
+    console.error('Similar artifacts error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Server error while computing similar artifacts',
     });
   }
 });

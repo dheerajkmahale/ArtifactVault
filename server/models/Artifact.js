@@ -38,6 +38,14 @@ const artifactSchema = new mongoose.Schema(
       enum: ['uploading', 'processing', 'completed', 'failed'],
       default: 'completed',
     },
+    curatorVerified: {
+      type: Boolean,
+      default: false,
+    },
+    descriptionEmbedding: {
+      type: [Number],
+      default: [],
+    },
     metadata: {
       type: mongoose.Schema.Types.Mixed,
       default: {},

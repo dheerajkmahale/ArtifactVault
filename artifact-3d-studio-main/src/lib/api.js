@@ -203,5 +203,27 @@ export const api = {
       }
       return result;
     },
+
+    update: async (id, data) => {
+      const res = await fetch(`${API_BASE}/artifacts/${id}`, {
+        method: 'PATCH',
+        headers: getHeaders(true),
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.message || 'Failed to update artifact');
+      }
+      return result.artifact;
+    },
+
+    getSimilar: async (id) => {
+      const res = await fetch(`${API_BASE}/artifacts/${id}/similar`);
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.message || 'Failed to fetch similar artifacts');
+      }
+      return result.similar || [];
+    },
   },
 };

@@ -19,6 +19,8 @@ import {
   CheckCircle2,
   Clock,
   Box,
+  ArrowUpDown,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -38,6 +40,7 @@ const Gallery = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("newest"); // "newest", "oldest", "confidence", "alphabetical"
   const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
@@ -90,9 +93,9 @@ const Gallery = () => {
     return art.metadata?.estimatedEra || "Historical";
   };
 
-  // Filtered artifacts
-  const filteredArtifacts = useMemo(() => {
-    return artifacts.filter((artifact) => {
+  // Filtered and Sorted artifacts
+  const sortedAndFilteredArtifacts = useMemo(() => {
+    const filtered = artifacts.filter((artifact) => {
       const category = getCategory(artifact).toLowerCase();
       const title = (artifact.title || "").toLowerCase();
       const desc = (artifact.description || "").toLowerCase();
@@ -112,7 +115,29 @@ const Gallery = () => {
 
       return matchesSearch && matchesCategory;
     });
-  }, [artifacts, searchTerm, selectedCategory]);
+
+    return filtered.sort((a, b) => {
+      if (sortBy === "newest") {
+        const dateA = new Date(a.created_at || a.createdAt || 0).getTime();
+        const dateB = new Date(b.created_at || b.createdAt || 0).getTime();
+        return dateB - dateA;
+      }
+      if (sortBy === "oldest") {
+        const dateA = new Date(a.created_at || a.createdAt || 0).getTime();
+        const dateB = new Date(b.created_at || b.createdAt || 0).getTime();
+        return dateA - dateB;
+      }
+      if (sortBy === "confidence") {
+        const confA = a.classification?.confidence || 0;
+        const confB = b.classification?.confidence || 0;
+        return confB - confA;
+      }
+      if (sortBy === "alphabetical") {
+        return (a.title || "").localeCompare(b.title || "");
+      }
+      return 0;
+    });
+  }, [artifacts, searchTerm, selectedCategory, sortBy]);
 
   return (
     <AuthGuard>
@@ -127,7 +152,7 @@ const Gallery = () => {
                 Artifact Archive & Gallery
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Explore digitized 3D cultural heritage and Gemini AI curatorial analyses
+                Explore digitized 3D cultural heritage, vector embeddings, and Gemini AI curatorial analyses
               </p>
             </div>
 
@@ -140,25 +165,44 @@ const Gallery = () => {
             </Button>
           </div>
 
-          {/* Search Bar & Category Filter Pills */}
+          {/* Search Bar, Sort Dropdown & Category Filter Pills */}
           <div className="space-y-4">
-            {/* Search Input */}
-            <div className="relative max-w-xl">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by title, category, era, or material..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-card/60 border-border/50 backdrop-blur-md focus:border-primary/50 h-11"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              {/* Search Input */}
+              <div className="relative flex-1 max-w-xl">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="input-gallery-search"
+                  placeholder="Search by title, category, era, or material..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-card/60 border-border/50 backdrop-blur-md focus:border-primary/50 h-11"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-2 shrink-0">
+                <ArrowUpDown className="w-4 h-4 text-muted-foreground hidden sm:block" />
+                <select
+                  id="select-gallery-sort"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="h-11 px-3.5 rounded-md bg-card/70 border border-border/50 text-foreground text-xs font-medium focus:outline-none focus:border-primary/60 cursor-pointer"
                 >
-                  Clear
-                </button>
-              )}
+                  <option value="newest" className="bg-background text-foreground">Sort: Newest</option>
+                  <option value="oldest" className="bg-background text-foreground">Sort: Oldest</option>
+                  <option value="confidence" className="bg-background text-foreground">Sort: Highest Confidence</option>
+                  <option value="alphabetical" className="bg-background text-foreground">Sort: Alphabetical</option>
+                </select>
+              </div>
             </div>
 
             {/* Category Filter Pills */}
@@ -186,7 +230,7 @@ const Gallery = () => {
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
               <p className="text-sm font-mono text-muted-foreground">Retrieving vaulted artifacts...</p>
             </div>
-          ) : filteredArtifacts.length === 0 ? (
+          ) : sortedAndFilteredArtifacts.length === 0 ? (
             <Card className="glass-panel border-border/50 bg-card/40 p-12 text-center max-w-md mx-auto">
               <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
                 <Box className="w-8 h-8" />
@@ -222,11 +266,12 @@ const Gallery = () => {
               )}
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredArtifacts.map((artifact) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="gallery-grid">
+              {sortedAndFilteredArtifacts.map((artifact) => {
                 const category = getCategory(artifact);
                 const era = getEra(artifact);
                 const isDeleting = deletingId === artifact.id;
+                const isVerified = !!artifact.curatorVerified;
 
                 return (
                   <Card
@@ -249,20 +294,20 @@ const Gallery = () => {
                           {category}
                         </span>
 
-                        <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full font-mono flex items-center gap-1 ${
-                            artifact.processing_status === "completed"
-                              ? "bg-emerald-500/90 text-black font-semibold"
-                              : "bg-amber-500/90 text-black font-semibold"
-                          }`}
-                        >
-                          {artifact.processing_status === "completed" ? (
-                            <CheckCircle2 className="w-2.5 h-2.5" />
+                        <div className="flex items-center gap-1.5">
+                          {/* Curator Verified vs AI Suggested Badge */}
+                          {isVerified ? (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-mono flex items-center gap-1 bg-emerald-500/90 text-black font-semibold shadow-sm">
+                              <ShieldCheck className="w-3 h-3" />
+                              Curator Verified
+                            </span>
                           ) : (
-                            <Clock className="w-2.5 h-2.5 animate-spin" />
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-mono flex items-center gap-1 bg-amber-500/90 text-black font-semibold shadow-sm">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              AI Suggested
+                            </span>
                           )}
-                          {artifact.processing_status === "completed" ? "3D Ready" : "Meshing"}
-                        </span>
+                        </div>
                       </div>
 
                       {/* Hover Overlay with Action Buttons */}
@@ -299,9 +344,11 @@ const Gallery = () => {
                     {/* Metadata Card Content */}
                     <CardContent className="p-4 flex-1 flex flex-col justify-between space-y-3">
                       <div>
-                        <h3 className="font-heading font-semibold text-base text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                          {artifact.title}
-                        </h3>
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-heading font-semibold text-base text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                            {artifact.title}
+                          </h3>
+                        </div>
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                           {artifact.description || "Archival photogrammetric record."}
                         </p>
@@ -313,9 +360,13 @@ const Gallery = () => {
                           {era}
                         </span>
                         <span>
-                          {artifact.created_at
-                            ? new Date(artifact.created_at).toLocaleDateString()
-                            : ""}
+                          {artifact.classification?.confidence ? (
+                            <span className="text-primary font-bold">{artifact.classification.confidence}% Match</span>
+                          ) : (
+                            artifact.created_at
+                              ? new Date(artifact.created_at).toLocaleDateString()
+                              : ""
+                          )}
                         </span>
                       </div>
                     </CardContent>
