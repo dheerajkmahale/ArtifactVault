@@ -41,9 +41,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Root route
-app.get('/', (req, res) => {
-  res.send('ArtifactVault Express API is running');
+// Global JSON error handling middleware (e.g. Multer file type/size errors)
+app.use((err, req, res, next) => {
+  console.warn('[Server Error]', err.message || err);
+  const status = err.status || err.statusCode || 400;
+  return res.status(status).json({
+    success: false,
+    message: err.message || 'An unexpected error occurred',
+  });
 });
 
 // Connect to MongoDB & Start Server
