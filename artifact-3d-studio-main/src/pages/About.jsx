@@ -1,298 +1,360 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Building2, Scan, Database, Shield, Users, Globe, Award, CheckCircle, Lock, ArrowRight, MapPin } from "lucide-react";
-const About = () => {
-    const navigate = useNavigate();
-    useEffect(() => {
-        // Check if user is authenticated
-        const checkAuth = async () => {
-            // If user is not authenticated, redirect to index page
-            // Otherwise, they can access the about page
-        };
-        checkAuth();
-    }, []);
-    return (<div className="min-h-screen bg-background">
-      {/* Navigation Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-                <Building2 className="h-5 w-5 text-primary-foreground"/>
-              </div>
-              <span className="text-xl font-bold">ArtifactVault</span>
-            </div>
-            <nav className="hidden md:flex items-center space-x-8">
-              <a href="/" className="text-muted-foreground hover:text-foreground transition-colors">Home</a>
-              <a href="/about" className="text-primary font-medium">About</a>
-              <a href="/auth" className="text-muted-foreground hover:text-foreground transition-colors">Contact</a>
-              <a href="/auth" className="text-muted-foreground hover:text-foreground transition-colors">Support</a>
-            </nav>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => navigate("/auth")}>
-                Sign In
-              </Button>
-              <Button onClick={() => navigate("/auth")}>
-                Get Started
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Navbar } from "@/components/Navbar";
+import {
+  Box,
+  Sparkles,
+  Cpu,
+  Layers,
+  ShieldCheck,
+  Eye,
+  FileDown,
+  Search,
+  Code,
+  Database,
+  ArrowRight,
+  User,
+  CheckCircle2,
+  Terminal,
+  ExternalLink,
+  BookOpen,
+} from "lucide-react";
 
-      <div className="container mx-auto px-4 py-12">
-        {/* Hero Section */}
-        <div className="text-center space-y-6 mb-16 max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-            <span className="text-foreground">Revolutionizing</span>
-            <br />
-            <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
-              Cultural Preservation
+const TECH_STACK = [
+  {
+    category: "Frontend Application",
+    tech: "React 18 & Vite",
+    desc: "Single-page application with Tailwind CSS design tokens, Radix UI primitives, Lucide icons, and Sonner notifications.",
+  },
+  {
+    category: "3D Spatial Graphics",
+    tech: "Three.js & WebGL",
+    desc: "Interactive 3D viewport featuring OrbitControls, multi-directional museum lighting, and wireframe mesh inspection.",
+  },
+  {
+    category: "Backend REST API",
+    tech: "Node.js & Express",
+    desc: "Modular RESTful backend with Multer for secure multipart file streaming, JWT auth middleware, and bcrypt password hashing.",
+  },
+  {
+    category: "Database & Vector Store",
+    tech: "MongoDB & Mongoose",
+    desc: "Document database storing user accounts, relational artifact metadata, curatorial tags, and 3072-dimensional embedding arrays.",
+  },
+  {
+    category: "Multimodal Vision AI",
+    tech: "Google Gemini 2.5 Flash",
+    desc: "Vision model analyzing artifact photographs to extract category, confidence, estimated era, geographic origin, material, and physical condition.",
+  },
+  {
+    category: "Semantic Vector Embeddings",
+    tech: "gemini-embedding-001",
+    desc: "Generates high-dimensional vector embeddings of curatorial descriptions for in-memory cosine similarity search.",
+  },
+];
+
+const WORKING_FEATURES = [
+  {
+    icon: Sparkles,
+    title: "Gemini Vision Taxonomy",
+    desc: "Automatically extracts structured archaeological metadata (category, confidence score, historical era, geographic origin, material composition, and condition state) from 2D photos.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Curator Verification Workflow",
+    desc: "'AI suggests, human confirms' paradigm: logged-in curators can review, amend, and formally verify classification fields with permanent 'Curator Verified' badges.",
+  },
+  {
+    icon: Search,
+    title: "Embedding-Based Similarity",
+    desc: "Generates text embeddings using gemini-embedding-001 and computes server-side vector cosine similarity to surface the closest matching vault relics in real time.",
+  },
+  {
+    icon: Box,
+    title: "Interactive 3D Spatial Canvas",
+    desc: "Three.js WebGL viewport allowing users to rotate, orbit, zoom, pan, and toggle wireframe geometries with custom museum-grade studio illumination.",
+  },
+  {
+    icon: FileDown,
+    title: "One-Page Archival PDF Cards",
+    desc: "Generates downloadable, printable museum catalog cards using jsPDF, complete with embedded photographic reference, specifications table, and curatorial verification stamp.",
+  },
+  {
+    icon: Layers,
+    title: "Dynamic Gallery & Sorting",
+    desc: "Explore vaulted cultural assets with live keyword search, archaeological category filter pills, and multi-mode sorting (Newest, Oldest, Highest Confidence, Alphabetical).",
+  },
+];
+
+const About = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar />
+
+      <main className="flex-1 container mx-auto px-4 py-12 max-w-6xl space-y-16">
+        {/* Header Hero Section */}
+        <section className="text-center space-y-6 max-w-3xl mx-auto pt-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-mono font-medium">
+            <Sparkles className="w-3.5 h-3.5" />
+            Independent Engineering Project
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-heading font-extrabold tracking-tight text-foreground">
+            About{" "}
+            <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent">
+              ArtifactVault
             </span>
           </h1>
-          <p className="text-xl text-muted-foreground leading-relaxed">
-            ArtifactVault provides advanced 3D digitization technology for cultural institutions,
-            enabling the preservation and sharing of historical artifacts through innovative AI-powered tools.
+
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+            ArtifactVault is an independent project exploring how modern multimodal vision AI,
+            vector embeddings, and interactive 3D WebGL graphics can assist in the digitization,
+            curation, and thematic exploration of archaeological and cultural heritage.
           </p>
-        </div>
 
-        {/* Mission & Values */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          <Card className="p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Globe className="h-5 w-5 text-primary"/>
-              </div>
-              <h3 className="text-2xl font-bold">Our Mission</h3>
-            </div>
-            <p className="text-muted-foreground leading-relaxed">
-              To democratize access to global cultural heritage by providing institutions worldwide
-              with enterprise-grade 3D digitization technology, enabling the preservation and
-              sharing of humanity's most precious artifacts for future generations.
-            </p>
-          </Card>
-
-          <Card className="p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
-                <Award className="h-5 w-5 text-secondary"/>
-              </div>
-              <h3 className="text-2xl font-bold">Our Values</h3>
-            </div>
-            <ul className="space-y-3 text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500"/>
-                <span>Cultural sensitivity and respect</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500"/>
-                <span>Innovation in preservation technology</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500"/>
-                <span>Accessibility and inclusivity</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500"/>
-                <span>Security and data protection</span>
-              </li>
-            </ul>
-          </Card>
-        </div>
-
-        {/* Technology & Innovation */}
-        <Card className="p-8 mb-16">
-          <div className="text-center mb-8">
-            <h3 className="text-3xl font-bold mb-4">Technology & Innovation</h3>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Our platform combines cutting-edge computer vision, machine learning, and
-              cloud infrastructure to deliver unprecedented accuracy and scalability.
-            </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <Button
+              onClick={() => navigate("/gallery")}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/20"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Explore the Archive
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/upload")}
+              className="border-border/60 hover:bg-muted"
+            >
+              <Sparkles className="w-4 h-4 mr-2 text-primary" />
+              Scan & Classify a Relic
+            </Button>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Scan className="h-8 w-8 text-primary"/>
-              </div>
-              <h4 className="text-xl font-semibold mb-2">Advanced 3D Reconstruction</h4>
-              <p className="text-muted-foreground text-sm">
-                Proprietary computer vision algorithms achieve sub-millimeter precision
-                in 3D model generation from 2D imagery.
-              </p>
-            </div>
+        </section>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Database className="h-8 w-8 text-secondary"/>
-              </div>
-              <h4 className="text-xl font-semibold mb-2">AI-Powered Classification</h4>
-              <p className="text-muted-foreground text-sm">
-                Machine learning models trained on millions of artifacts provide
-                automated categorization with 95%+ accuracy.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-8 w-8 text-purple-500"/>
-              </div>
-              <h4 className="text-xl font-semibold mb-2">Enterprise Security</h4>
-              <p className="text-muted-foreground text-sm">
-                Bank-level encryption, SOC 2 compliance, and role-based access
-                control protect your valuable cultural assets.
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Leadership Team */}
-        <Card className="p-8 mb-16">
-          <div className="text-center mb-8">
-            <h3 className="text-3xl font-bold mb-4">Leadership Team</h3>
-            <p className="text-muted-foreground">
-              Experts in cultural heritage, technology, and business leadership
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Users className="h-10 w-10 text-primary"/>
-              </div>
-              <h4 className="text-lg font-semibold">Dr. Sarah Chen</h4>
-              <p className="text-sm text-muted-foreground mb-2">Chief Executive Officer</p>
-              <p className="text-xs text-muted-foreground">
-                Former Director of Digital Initiatives at the Metropolitan Museum
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-secondary/20 to-primary/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Database className="h-10 w-10 text-secondary"/>
-              </div>
-              <h4 className="text-lg font-semibold">Dr. Marcus Rodriguez</h4>
-              <p className="text-sm text-muted-foreground mb-2">Chief Technology Officer</p>
-              <p className="text-xs text-muted-foreground">
-                AI researcher with 15+ years in computer vision and heritage preservation
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-primary/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Shield className="h-10 w-10 text-purple-500"/>
-              </div>
-              <h4 className="text-lg font-semibold">Elena Vasquez</h4>
-              <p className="text-sm text-muted-foreground mb-2">Chief Security Officer</p>
-              <p className="text-xs text-muted-foreground">
-                Former cybersecurity expert at UNESCO, specializing in cultural data protection
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Global Presence */}
-        <Card className="p-8 mb-16">
-          <div className="text-center mb-8">
-            <h3 className="text-3xl font-bold mb-4">Global Presence</h3>
-            <p className="text-muted-foreground">
-              Serving cultural institutions across six continents
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        {/* Project Genesis & Honest Motivation */}
+        <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch">
+          <Card className="md:col-span-7 glass-panel border-border/50 bg-card/40 p-8 flex flex-col justify-between">
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-primary"/>
-                <span className="font-semibold">Headquarters:</span>
-                <span className="text-muted-foreground">San Francisco, CA</span>
+              <div className="flex items-center gap-2 text-primary font-mono text-xs uppercase tracking-wider">
+                <BookOpen className="w-4 h-4" />
+                Project Genesis & Goals
               </div>
-              <div className="flex items-center gap-3">
-                <Building2 className="h-5 w-5 text-secondary"/>
-                <span className="font-semibold">Regional Offices:</span>
-                <span className="text-muted-foreground">London, Tokyo, São Paulo</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Users className="h-5 w-5 text-green-500"/>
-                <span className="font-semibold">Team Members:</span>
-                <span className="text-muted-foreground">150+ across 12 countries</span>
-              </div>
+              <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground">
+                Bridging Physical Antiquities and Digital Preservation
+              </h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Preserving museum artifacts and historical relics is traditionally a labor-intensive
+                process requiring specialized domain experts, manual cataloging, and proprietary archiving
+                software.
+              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                ArtifactVault was created as a modern web engineering prototype to demonstrate how
+                a self-contained MERN stack can integrate lightweight multimodal models (Google Gemini 2.5 Flash),
+                generate 3072-dimensional vector text embeddings for similarity search, and leverage client-side
+                Three.js WebGL rendering to produce an accessible, curator-friendly cataloging pipeline.
+              </p>
             </div>
-            <div className="bg-muted/50 rounded-lg p-6">
-              <div className="text-4xl font-bold text-primary mb-2">95%</div>
-              <div className="text-sm text-muted-foreground mb-4">Customer Satisfaction Rate</div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-green-500"/>
-                  <span className="text-sm">SOC 2 Type II Certified</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-blue-500"/>
-                  <span className="text-sm">ISO 27001 Compliant</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-purple-500"/>
-                  <span className="text-sm">GDPR & CCPA Compliant</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
 
-        {/* Partnership & Recognition */}
-        <Card className="p-8 mb-16">
-          <div className="text-center mb-8">
-            <h3 className="text-3xl font-bold mb-4">Partnerships & Recognition</h3>
-            <p className="text-muted-foreground">
-              Trusted by leading organizations and recognized by industry experts
+            <div className="p-3.5 rounded-lg bg-muted/30 border border-border/40 text-xs font-mono text-muted-foreground mt-4">
+              Architected as an end-to-end full-stack portfolio implementation combining vision AI and spatial WebGL.
+            </div>
+          </Card>
+
+          <Card className="md:col-span-5 glass-panel border-border/50 bg-card/40 p-8 flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-primary font-mono text-xs uppercase tracking-wider">
+                <ShieldCheck className="w-4 h-4" />
+                The Curatorial Philosophy
+              </div>
+              <h3 className="text-xl font-heading font-bold text-foreground">
+                "AI Suggests, Human Confirms"
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Rather than treating AI output as infallible ground truth, ArtifactVault adopts a
+                human-in-the-loop paradigm:
+              </p>
+              <ul className="space-y-2.5 text-xs text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Initial AI Taxonomy:</strong> Gemini Vision generates preliminary estimates of era, region, materials, and condition.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Curatorial Verification:</strong> Authorized human reviewers can edit every attribute, updating vector embeddings and conferring a verified badge.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Transparent Provenance:</strong> Unedited records remain transparently marked as AI Suggested.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-3.5 rounded-lg bg-muted/30 border border-border/40 text-xs font-mono text-muted-foreground mt-4">
+              Curator human verification overrides AI suggestions directly via protected PATCH APIs.
+            </div>
+          </Card>
+        </section>
+
+        {/* Real Working Features Section */}
+        <section className="space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs font-mono uppercase tracking-widest text-primary font-semibold">
+              Live Capabilities
+            </span>
+            <h2 className="text-3xl font-heading font-bold text-foreground">
+              What Is Built & Fully Working
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Every feature listed below is implemented end-to-end and testable right now in the app.
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h4 className="font-semibold mb-4">Strategic Partners</h4>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>• UNESCO World Heritage Center</li>
-                <li>• International Council of Museums (ICOM)</li>
-                <li>• Getty Conservation Institute</li>
-                <li>• Smithsonian Institution</li>
-                <li>• British Museum</li>
-              </ul>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {WORKING_FEATURES.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <Card
+                  key={feature.title}
+                  className="glass-card border-border/50 bg-card/40 p-6 flex flex-col justify-between hover:border-primary/40 transition-colors"
+                >
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-heading font-semibold text-lg text-foreground">
+                      {feature.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {feature.desc}
+                    </p>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Actual Technology Stack */}
+        <section className="space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs font-mono uppercase tracking-widest text-primary font-semibold">
+              System Architecture
+            </span>
+            <h2 className="text-3xl font-heading font-bold text-foreground">
+              Under the Hood: Tech Stack
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Scaffolded originally as a prototype, migrated to a self-contained MERN architecture.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {TECH_STACK.map((item) => (
+              <div
+                key={item.tech}
+                className="p-5 rounded-xl border border-border/40 bg-card/30 space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono uppercase text-primary font-semibold tracking-wider">
+                    {item.category}
+                  </span>
+                  <Code className="w-3.5 h-3.5 text-muted-foreground" />
+                </div>
+                <h4 className="font-heading font-semibold text-base text-foreground">
+                  {item.tech}
+                </h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Technical Reality & Scope Disclosure */}
+        <section className="glass-panel border-border/50 bg-card/30 p-8 rounded-2xl space-y-4">
+          <div className="flex items-center gap-2 text-amber-400 font-mono text-xs uppercase tracking-wider">
+            <Terminal className="w-4 h-4" />
+            Project Scope & Honest Technical Notes
+          </div>
+
+          <h3 className="text-2xl font-heading font-bold text-foreground">
+            What This Project Is — and What It Isn't
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-muted-foreground leading-relaxed">
+            <div className="space-y-2">
+              <p>
+                <strong>Independent Student / Portfolio Project:</strong> ArtifactVault is a personal software development project created to explore computer vision, vector similarity search, and WebGL graphics. It is not an enterprise startup, has no external venture backing, and holds no corporate partnerships with institutions like UNESCO or the Smithsonian.
+              </p>
+              <p>
+                <strong>Security & Auth Scope:</strong> User authentication is implemented using standard JWTs signed on the backend and passwords hashed with bcrypt (salt rounds = 10). It is tailored for portfolio demonstration and local deployment, not high-assurance bank-grade banking environments.
+              </p>
             </div>
-            <div>
-              <h4 className="font-semibold mb-4">Awards & Recognition</h4>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>• "Best Heritage Technology" - TechCrunch Disrupt 2023</li>
-                <li>• "Innovation Award" - Museum Computer Network 2023</li>
-                <li>• "Digital Preservation Leader" - Cultural Heritage Summit 2022</li>
-                <li>• "Top 50 EdTech Companies" - EdTech Magazine 2022</li>
-              </ul>
+
+            <div className="space-y-2">
+              <p>
+                <strong>3D Mesh Rendering Note:</strong> True multi-view neural photogrammetric 3D mesh reconstruction from single 2D photographs requires significant GPU cloud compute (e.g. NeRFs or Gaussian Splatting). The current viewer renders an interactive 3D spatial geometry with dynamic OrbitControls, Three.js studio lighting, and texture mapping as an accessible client-side demonstration.
+              </p>
+              <p>
+                <strong>Vector Search Scaling:</strong> Similarity search runs server-side in-memory cosine similarity across Gemini text embeddings. This is efficient and responsive for collections up to several thousand relics without the overhead of maintaining an external vector database cluster.
+              </p>
             </div>
           </div>
-        </Card>
+        </section>
 
-        {/* Call to Action */}
-        <Card className="bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 border-border/50 text-center p-12">
-          <h3 className="text-3xl font-bold mb-4">Ready to Transform Your Institution?</h3>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join the global community of cultural institutions leveraging
-            cutting-edge technology to preserve and share our shared heritage.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate("/auth")} className="bg-primary hover:bg-primary/90">
-              Start Enterprise Trial
-              <ArrowRight className="ml-2 h-4 w-4"/>
+        {/* Creator Bio Section */}
+        <section className="p-8 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/5 via-card/50 to-primary/5 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-bold text-xl shrink-0">
+              <User className="w-7 h-7" />
+            </div>
+            <div>
+              <span className="text-xs font-mono uppercase tracking-wider text-primary font-semibold">
+                Creator & Developer
+              </span>
+              <h3 className="text-xl font-heading font-bold text-foreground">
+                Dheeraj Mahale
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Full-Stack & Data Science Student Developer
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open("https://github.com/dheerajkmahale/ArtifactVault", "_blank")}
+              className="border-border/60 hover:bg-muted text-xs flex-1 sm:flex-none"
+            >
+              <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+              GitHub Repository
             </Button>
-            <Button size="lg" variant="outline">
-              Schedule Consultation
+            <Button
+              size="sm"
+              onClick={() => navigate("/gallery")}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex-1 sm:flex-none"
+            >
+              View Artifacts
+              <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
             </Button>
           </div>
-        </Card>
-      </div>
-
-
-    </div>);
+        </section>
+      </main>
+    </div>
+  );
 };
+
 export default About;
+``
